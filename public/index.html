@@ -1,79 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Spotify Song Insights</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
-        canvas { max-width: 800px; margin: 30px auto; display: block; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Spotify Song Insights</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+    h1 { margin-bottom: 40px; }
+    canvas { margin: 20px auto; display: block; max-width: 90%; }
+  </style>
 </head>
 <body>
-    <h1>Spotify Song Insights</h1>
-    <canvas id="energyChart"></canvas>
-    <canvas id="danceabilityChart"></canvas>
+  <h1>Spotify Song Insights</h1>
 
-    <script>
-        async function fetchData() {
-            // Fetch top 50 tracks by energy
-            const response = await fetch('http://localhost:3000/top-energy/50');
-            const data = await response.json();
+  <canvas id="energyChart"></canvas>
+  <canvas id="danceChart"></canvas>
+  <canvas id="tempoChart"></canvas>
 
-            const trackNames = data.map(track => track.track_name);
-            const energyValues = data.map(track => track.energy);
-            const danceValues = data.map(track => track.danceability);
+  <script>
+    const API_URL = 'https://spotify-api-wa8h.onrender.com'; // Your deployed Render API
 
-            renderCharts(trackNames, energyValues, danceValues);
+    async function fetchTracks() {
+      const res = await fetch(`${API_URL}/artists`);
+      const data = await res.json();
+      return data;
+    }
+
+    function getTopN(tracks, key, n = 20) {
+      return tracks
+        .sort((a, b) => b[key] - a[key])
+        .slice(0, n);
+    }
+
+    async function drawCharts() {
+      const tracks = await fetchTracks();
+
+      // Top 20 tracks by energy
+      const topEnergy = getTopN(tracks, 'energy');
+      const topDance = getTopN(tracks, 'danceability');
+      const topTempo = getTopN(tracks, 'tempo');
+
+      // Energy Chart
+      new Chart(document.getElementById('energyChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: topEnergy.map(t => t.track_name),
+          datasets: [{
+            label: 'Energy',
+            data: topEnergy.map(t => t.energy),
+            backgroundColor: 'rgba(255, 99, 132, 0.6)'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { x: { ticks: { maxRotation: 90, minRotation: 45 } } }
         }
+      });
 
-        function renderCharts(names, energy, dance) {
-            // Energy Chart
-            const ctx1 = document.getElementById('energyChart').getContext('2d');
-            new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: names,
-                    datasets: [{
-                        label: 'Energy',
-                        data: energy,
-                        backgroundColor: 'rgba(75, 192, 192, 0.6)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: true } },
-                    scales: {
-                        x: { ticks: { display: false } },
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-
-            // Danceability Chart
-            const ctx2 = document.getElementById('danceabilityChart').getContext('2d');
-            new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: names,
-                    datasets: [{
-                        label: 'Danceability',
-                        data: dance,
-                        backgroundColor: 'rgba(255, 99, 132, 0.6)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: { legend: { display: true } },
-                    scales: {
-                        x: { ticks: { display: false } },
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
+      // Danceability Chart
+      new Chart(document.getElementById('danceChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: topDance.map(t => t.track_name),
+          datasets: [{
+            label: 'Danceability',
+            data: topDance.map(t => t.danceability),
+            backgroundColor: 'rgba(54, 162, 235, 0.6)'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { x: { ticks: { maxRotation: 90, minRotation: 45 } } }
         }
+      });
 
-        fetchData();
-    </script>
+      // Tempo Chart
+      new Chart(document.getElementById('tempoChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: topTempo.map(t => t.track_name),
+          datasets: [{
+            label: 'Tempo (BPM)',
+            data: topTempo.map(t => t.tempo),
+            backgroundColor: 'rgba(255, 206, 86, 0.6)'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { x: { ticks: { maxRotation: 90, minRotation: 45 } } }
+        }
+      });
+    }
+
+    drawCharts();
+  </script>
 </body>
 </html>
