@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spotify Song Insights</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        canvas { max-width: 800px; margin: 30px auto; display: block; }
+    </style>
+</head>
+<body>
+    <h1>Spotify Song Insights</h1>
+    <canvas id="energyChart"></canvas>
+    <canvas id="danceabilityChart"></canvas>
+
+    <script>
+        async function fetchData() {
+            // Fetch top 50 tracks by energy
+            const response = await fetch('http://localhost:3000/top-energy/50');
+            const data = await response.json();
+
+            const trackNames = data.map(track => track.track_name);
+            const energyValues = data.map(track => track.energy);
+            const danceValues = data.map(track => track.danceability);
+
+            renderCharts(trackNames, energyValues, danceValues);
+        }
+
+        function renderCharts(names, energy, dance) {
+            // Energy Chart
+            const ctx1 = document.getElementById('energyChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: names,
+                    datasets: [{
+                        label: 'Energy',
+                        data: energy,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: true } },
+                    scales: {
+                        x: { ticks: { display: false } },
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Danceability Chart
+            const ctx2 = document.getElementById('danceabilityChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: names,
+                    datasets: [{
+                        label: 'Danceability',
+                        data: dance,
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: true } },
+                    scales: {
+                        x: { ticks: { display: false } },
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
