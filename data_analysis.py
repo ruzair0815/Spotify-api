@@ -11,7 +11,7 @@ df.rename(columns={'name': 'track_name', 'artists': 'artist_name'}, inplace=True
 # Remove duplicates
 df.drop_duplicates(inplace=True)
 
-# Connect to MongoDB (replace with your credentials)
+# Connect to MongoDB 
 client = MongoClient(
     "mongodb+srv://rehmauzair:3zffOi64NLq60Qct@cluster0.rax7xgg.mongodb.net/spotifyDB?retryWrites=true&w=majority"
 )
@@ -24,4 +24,4 @@ collection.delete_many({})
 # Insert new data
 collection.insert_many(df.to_dict(orient="records"))
 
-print("✅ Data uploaded to MongoDB successfully!")
+print("Data uploaded to MongoDB successfully!")
